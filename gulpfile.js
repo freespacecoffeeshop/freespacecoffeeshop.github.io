@@ -26,12 +26,12 @@ gulp.task("concatScripts", function() {
 		.pipe(browserSync.stream());
 });
 
-gulp.task("minifyScripts", ["concatScripts"], function() {
+gulp.task("minifyScripts", gulp.series("concatScripts", function() {
   return gulp.src("assets/js/main.js")
 	  .pipe(uglify())
 	  .pipe(rename('main.min.js'))
 	  .pipe(gulp.dest('dist/assets/js'));
-});
+}));
 
 gulp.task('compileSass', function() {
   return gulp.src("assets/css/main.scss")
@@ -43,16 +43,16 @@ gulp.task('compileSass', function() {
     .pipe(browserSync.stream());
 });
 
-gulp.task("minifyCss", ["compileSass"], function() {
+gulp.task("minifyCss", gulp.series("compileSass", function() {
   return gulp.src("assets/css/main.css")
     .pipe(cssmin())
     .pipe(rename('main.min.css'))
     .pipe(gulp.dest('dist/assets/css'));
-});
+}));
 
 gulp.task('watchFiles', function() {
-  gulp.watch('assets/css/**/*.scss', ['compileSass']);
-  gulp.watch('assets/js/*.js', ['concatScripts']);
+  gulp.watch('assets/css/**/*.scss', gulp.series('compileSass'));
+  gulp.watch('assets/js/*.js', gulp.series('concatScripts'));
 })
 
 gulp.task('clean', function() {
@@ -68,7 +68,7 @@ gulp.task('renameSources', function() {
     .pipe(gulp.dest('dist/'));
 });
 
-gulp.task("build", ['minifyScripts', 'minifyCss'], function() {
+gulp.task("build", gulp.series(['minifyScripts', 'minifyCss'], function() {
   return gulp.src([
 		'*.html',
 		'*.php',
@@ -76,17 +76,17 @@ gulp.task("build", ['minifyScripts', 'minifyCss'], function() {
 		"assets/img/**"
 	], { base: './'})
 		.pipe(gulp.dest('dist'));
-});
+}));
 
-gulp.task('serve', ['watchFiles'], function(){
+gulp.task('serve', gulp.parallel('watchFiles', function(){
   browserSync.init({
   	server: "./"
   });
 
-  gulp.watch("assets/css/**/*.scss", ['watchFiles']);
+  gulp.watch("assets/css/**/*.scss", gulp.series('watchFiles'));
   gulp.watch(['*.html', '*.php']).on('change', browserSync.reload);
-});
+}));
 
-gulp.task("default", ["clean", 'build'], function() {
+gulp.task("default", gulp.series(["clean", 'build'], function() {
   gulp.start('renameSources');
-});
+}));

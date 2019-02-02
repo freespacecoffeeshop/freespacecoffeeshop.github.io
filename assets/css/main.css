@@ -7749,5 +7749,7 @@ html {
 
 /* Custom Mixins -------------------- */
 /* Base Styles -------------------- */
+h1 {
+  font-weight: 600; }
 
 /*# sourceMappingURL=main.css.map */
